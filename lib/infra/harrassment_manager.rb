@@ -2,7 +2,7 @@ require 'infra/redshift_manager'
 
 class HarrassmentManager
 	def self.get_records_from_prospect_db(query)
-		records = RedshiftManager.query(query)
+		records = RedshiftManager.query(query || "SELECT vendor_category, source, company_name FROM prospect.prospect where vendor_category!='Venue' and source ILIKE '%weddingwir%'")
 		records.each do |record|
 			Lead.create!(record)
 		end
@@ -16,17 +16,17 @@ class HarrassmentManager
 		leads.each do |lead|
 			begin
 
-				client_params = generate_random_params
+				client = Client.skip(rand(Client.count)).first
 
 				driver.navigate.to lead[:source]
 
 				wait = Selenium::WebDriver::Wait.new(:timeout => 10)
 
-				driver.find_element(:class, "testing-first-name").send_keys(client_params[:first_name])
+				driver.find_element(:class, "testing-first-name").send_keys(client.first_name)
 
-				driver.find_element(:class, "testing-last-name").send_keys(client_params[:last_name])
+				driver.find_element(:class, "testing-last-name").send_keys(client.last_name)
 
-				driver.find_element(:class, "testing-email").send_keys(client_params[:user])
+				driver.find_element(:class, "testing-email").send_keys(client.user)
 
 				calendar = driver.find_element(:class, "js-eventdate-picker")
 				calendar.click
@@ -46,15 +46,5 @@ class HarrassmentManager
 				Rails.logger.info "#{lead['company_name']} failed bc #{e}"
 			end
 		end
-	end
-
-	def self.generate_random_params()
-		client_params = {}
-		num_clients = Client.count
-		
-		client_params[:first_name] = Client.skip(rand(num_clients)).first.first_name
-		client_params[:last_name] = Client.skip(rand(num_clients)).first.last_name
-		client_params[:user] = Client.skip(rand(num_clients)).first.user
-		return client_params
 	end
 end

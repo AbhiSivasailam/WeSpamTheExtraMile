@@ -8,7 +8,7 @@ class HarrassmentManager
 		end
 	end
 
-	def self.send_to_ww(batch_size=1000)
+	def self.send_to_ww(batch_size=100)
 		driver = Selenium::WebDriver.for :chrome
 
 		leads = Lead.where(:sent.ne => true).limit(batch_size).shuffle

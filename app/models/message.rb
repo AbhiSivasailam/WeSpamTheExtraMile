@@ -1,4 +1,4 @@
 class Message
   include Mongoid::Document
-  field :text, type: string
+  field :text, type: String
 end
